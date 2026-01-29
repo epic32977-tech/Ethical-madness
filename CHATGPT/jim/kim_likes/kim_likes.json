@@ -1,0 +1,84 @@
+{
+  "kim_kardashian_likes": {
+    "fashion_and_beauty": [
+      {
+        "item": "Skims",
+        "details": "Her own shapewear and loungewear line, focusing on comfort and neutral tones."
+      },
+      {
+        "item": "Neutral Color Palettes",
+        "details": "Beige, cream, olive, and brown tones for home decor and clothing."
+      },
+      {
+        "item": "Balenciaga",
+        "details": "High fashion brand she frequently wears and collaborates with."
+      },
+      {
+        "item": "Latex Outfits",
+        "details": "Tight-fitting latex dresses and suits."
+      },
+      {
+        "item": "Vintage Mugler",
+        "details": "Archival fashion pieces."
+      },
+      {
+        "item": "Contouring",
+        "details": "Makeup technique she helped popularize."
+      }
+    ],
+    "food_and_drink": [
+      {
+        "item": "Beignets",
+        "details": "Specifically from Cafe Du Monde in New Orleans."
+      },
+      {
+        "item": "Chinese Chicken Salad",
+        "details": "Her go-to order from Health Nut in Calabasas."
+      },
+      {
+        "item": "Churros",
+        "details": "A favorite treat, often enjoyed at Disney."
+      },
+      {
+        "item": "Soul Food",
+        "details": "Fried chicken, mac and cheese, cornbread."
+      },
+      {
+        "item": "Iced Tea",
+        "details": "Often seen drinking large iced teas."
+      }
+    ],
+    "lifestyle_and_interests": [
+      {
+        "item": "Law and Justice Reform",
+        "details": "Passion for studying law and advocating for wrongful conviction reform."
+      },
+      {
+        "item": "Organization",
+        "details": "Highly organized pantry and closet spaces (e.g., jar organization)."
+      },
+      {
+        "item": "Minimalist Interior Design",
+        "details": "Axel Vervoordt designed 'monastery' style home."
+      },
+      {
+        "item": "Family",
+        "details": "Spending time with her children and the extended Kardashian-Jenner clan."
+      }
+    ],
+    "places": [
+      {
+        "item": "Calabasas",
+        "details": "Home base."
+      },
+      {
+        "item": "Palm Springs",
+        "details": "Family vacation home location."
+      },
+      {
+        "item": "Paris",
+        "details": "For Fashion Week (though with mixed history)."
+      }
+    ]
+  }
+}
