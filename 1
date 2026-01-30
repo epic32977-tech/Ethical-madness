@@ -1,0 +1,161 @@
+Yes, let's add that **automatic cleanup** feature—it's a game-changer for keeping your workflow clean and preventing the inbox from turning into a dumping ground. Once an image is successfully processed (optimized, watermarked, metadata tagged), we'll move the original source file to an **Archive** subfolder inside your `POD-Inbox` (or wherever you prefer).
+
+This makes the system truly "set it and forget it": drop files → wait a bit → find clean JPEGs in `optimized_etsy/` and originals safely archived.
+
+### Key Additions & Refinements
+1. **Archive Folder** — Created automatically as `POD-Inbox/archive_originals/` (timestamped or dated folders optional, but simple for now).
+2. **Move on Success** — Only after `magick` exits with code 0 (success) and we confirm the output file exists and is non-zero size.
+3. **Safety Delay for Large Files** — To handle the "file still writing" issue with fswatch:
+   - Add a short initial `sleep 2` (adjustable).
+   - Then poll file size for stability (wait until size doesn't change for ~3 seconds). This is a lightweight, reliable way without external tools.
+4. **macOS Notification** — On batch completion or per-file success (configurable). We'll use `osascript` with a sound for that satisfying "ding" feedback.
+5. **Verify Metadata** — You can still check with:  
+   `magick identify -verbose optimized_etsy/yourfile.jpg | grep -i copyright`  
+   (It'll show the `-set comment` and `-set copyright` fields.)
+
+### Updated Watch Script (`etsy-pod-watch.sh`)
+Replace your existing script with this version. I kept everything else (watermark, sharpness, etc.) intact and just layered in the new features.
+
+```bash
+#!/usr/bin/env bash
+
+# etsy-pod-watch.sh - Watches INPUT_DIR, auto-processes, watermarks, archives originals on success
+# Includes: safety delay for in-flight writes, macOS notifications, archive move
+
+# ================= CONFIG =================
+INPUT_DIR="$HOME/Pictures/POD-Inbox"                  # Your watch folder
+OUTPUT_DIR="$INPUT_DIR/optimized_etsy"
+ARCHIVE_DIR="$INPUT_DIR/archive_originals"            # New: where originals go after success
+
+MAX_WIDTH=2600
+QUALITY=82
+WATERMARK_TEXT="© Epic 2026"                          # ← Your shop name here!
+OPACITY=25
+GRAVITY="SouthEast"
+FONT="Arial"
+POINTSIZE_RELATIVE=6
+OFFSET="+30+30"
+
+# Safety delay (seconds) for file copy completion
+INITIAL_SLEEP=2
+STABILITY_CHECK_INTERVAL=1   # seconds between size checks
+STABILITY_THRESHOLD=3        # seconds of no change = stable
+
+# Notifications: per-file or only on batch? (set to 1 for per-file ding)
+NOTIFY_PER_FILE=1
+NOTIFY_SOUND="Frog"          # Options: Frog, Submarine, Basso, etc. (macOS system sounds)
+
+# Supported extensions
+EXTENSIONS="jpg jpeg png"
+# ==========================================
+
+mkdir -p "$OUTPUT_DIR" "$ARCHIVE_DIR" || { echo "Cannot create dirs"; exit 1; }
+
+echo "Watching: $INPUT_DIR"
+echo "Output:   $OUTPUT_DIR"
+echo "Archive:  $ARCHIVE_DIR"
+echo "Ctrl+C to stop."
+
+process_file() {
+  local file="$1"
+  local base=$(basename "$file")
+  local filename="${base%.*}"
+  local output="$OUTPUT_DIR/${filename}.jpg"
+
+  # Skip if output already exists
+  if [ -f "$output" ]; then
+    echo "Skipping (already processed): $base"
+    return
+  fi
+
+  echo "New file: $file → $output"
+
+  # Safety: wait for file to finish writing
+  sleep $INITIAL_SLEEP
+
+  # Poll until file size stable (no growth for STABILITY_THRESHOLD seconds)
+  local last_size=0
+  local stable_time=0
+  while true; do
+    current_size=$(stat -f%z "$file" 2>/dev/null || echo 0)
+    if [ "$current_size" -eq "$last_size" ]; then
+      stable_time=$((stable_time + STABILITY_CHECK_INTERVAL))
+      if [ "$stable_time" -ge "$STABILITY_THRESHOLD" ]; then
+        break
+      fi
+    else
+      stable_time=0
+    fi
+    last_size=$current_size
+    sleep $STABILITY_CHECK_INTERVAL
+  done
+
+  # Build magick command
+  local cmd="magick \"$file\" \
+    -resize ${MAX_WIDTH}x \
+    -unsharp 0x0.75+0.75+0.008 \
+    -quality $QUALITY \
+    -strip \
+    -interlace Plane \
+    -sampling-factor 4:2:0 \
+    -colorspace sRGB"
+
+  # Text watermark
+  if [ -n "$WATERMARK_TEXT" ]; then
+    local pointsize=$(magick identify -format "%w" "$file" | awk "{print int(\$1 * $POINTSIZE_RELATIVE / 100)}")
+    [ "$pointsize" -lt 40 ] && pointsize=40
+
+    cmd="$cmd \
+      -font $FONT \
+      -pointsize $pointsize \
+      -fill \"rgba(0,0,0,0.6)\"   -annotate $GRAVITY$OFFSET+2+2 \"$WATERMARK_TEXT\" \
+      -fill \"rgba(255,255,255,0.$OPACITY)\"   -annotate $GRAVITY$OFFSET+0+0 \"$WATERMARK_TEXT\""
+  fi
+
+  # Metadata (invisible copyright for DMCA proof)
+  cmd="$cmd \
+    -set comment \"Copyright © 2026 Epic. All rights reserved.\" \
+    -set copyright \"Epic\" \
+    \"$output\""
+
+  eval $cmd
+
+  if [ $? -eq 0 ] && [ -s "$output" ]; then
+    local original_size=$(du -h "$file" | cut -f1)
+    local new_size=$(du -h "$output" | cut -f1)
+    echo "Success! $original_size → $new_size"
+
+    # Move original to archive
+    mv "$file" "$ARCHIVE_DIR/$base"
+    echo "   Archived original: $ARCHIVE_DIR/$base"
+
+    # Notification
+    if [ "$NOTIFY_PER_FILE" -eq 1 ]; then
+      osascript -e "display notification \"Processed: $base\" with title \"Etsy POD Optimizer\" sound name \"$NOTIFY_SOUND\""
+    fi
+  else
+    echo "Error processing $file (magick failed or output empty)"
+    # Optional: rm "$output" if partial
+  fi
+}
+
+# fswatch watcher
+fswatch -o "$INPUT_DIR" | while read f; do
+  # Find recent files matching extensions (avoids re-processing old ones)
+  find "$INPUT_DIR" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) -newerct "$(date -v-5M '+%Y-%m-%d %H:%M:%S')" | while read -r file; do
+    process_file "$file"
+  done
+done
+
+# Optional: Final notification when watcher stops (unlikely, but for completeness)
+# trap 'osascript -e "display notification \"Watcher stopped\" with title \"Etsy POD\" sound name \"Basso\""' EXIT
+```
+
+### How to Use & Test
+1. Update paths in CONFIG if needed (e.g., change `ARCHIVE_DIR` to a dated subfolder like `$INPUT_DIR/archive_$(date +%Y-%m)`).
+2. Make executable: `chmod +x etsy-pod-watch.sh`
+3. Run in background: `nohup ./etsy-pod-watch.sh > ~/pod-watch.log 2>&1 &`
+4. Drop a test image (even large one) into `POD-Inbox` — watch it process, watermark, optimize, notify you with a ding, and move the original to `archive_originals/`.
+5. Check metadata: `magick identify -verbose optimized_etsy/test.jpg | grep -i copyright`
+
+This should handle hundreds of files reliably, keep your inbox pristine, and give you audible feedback. If you want **batch notifications** (only notify once after a pause in activity), **dated archive folders**, **email via mail** command, or a **diagonal watermark toggle**, just let me know—happy to iterate further. Your POD microservice is now production-ready! 🚀
