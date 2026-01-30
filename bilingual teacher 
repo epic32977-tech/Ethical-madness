@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Batch Scripting / Scripting Avanzado en Batch</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a8917;
+            --secondary: #292929;
+            --light-gray: #f9f9f9;
+            --medium-gray: #e6e6e6;
+            --dark-gray: #6b6b6b;
+            --accent: #4a6fa5;
+            --warning: #e67e22;
+            --code-bg: #2d2d2d;
+            --es-accent: #d72631;
+            --en-accent: #4a6fa5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--secondary);
+            line-height: 1.6;
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Language Toggle */
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid var(--medium-gray);
+        }
+        
+        .lang-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            color: var(--dark-gray);
+        }
+        
+        .lang-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .lang-btn:hover:not(.active) {
+            background: var(--light-gray);
+        }
+        
+        /* Header */
+        header {
+            padding-top: 80px;
+            margin-bottom: 40px;
+        }
+        
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-family: 'Merriweather', serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .btn {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .author-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .author-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 22px;
+        }
+        
+        .author-info h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        
+        .author-info p {
+            font-size: 14px;
+            color: var(--dark-gray);
+        }
+        
+        /* Article Content - Bilingual */
+        .article-content {
+            position: relative;
+        }
+        
+        .language-content {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        
+        .language-content.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+        }
+        
+        .article-title {
+            font-family: 'Merriweather', serif;
+            font-size: 42px;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+        
+        .article-subtitle {
+            font-size: 22px;
+            color: var(--dark-gray);
+            font-weight: 400;
+            margin-bottom: 40px;
+            line-height: 1.4;
+        }
+        
+        .article-body {
+            font-size: 20px;
+            line-height: 1.8;
+            margin-bottom: 60px;
+        }
+        
+        .article-body p {
+            margin-bottom: 25px;
+        }
+        
+        .article-body h2 {
+            font-family: 'Merriweather', serif;
+            font-size: 32px;
+            margin: 50px 0 20px;
+            font-weight: 700;
+        }
+        
+        .article-body h3 {
+            font-size: 24px;
+            margin: 40px 0 15px;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        
+        /* Special Sections */
+        .insight-box {
+            background-color: var(--light-gray);
+            border-left: 4px solid var(--primary);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .insight-box h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .pronunciation-guide {
+            background-color: #fff9f0;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid #ffecd9;
+        }
+        
+        .pronunciation-guide h4 {
+            color: var(--warning);
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .ipa {
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+        
+        /* Code Blocks */
+        .code-block {
+            background-color: var(--code-bg);
+            color: #f8f8f2;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 1.5;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #aaa;
+            color: #aaa;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .copy-btn:hover {
+            background-color: #aaa;
+            color: var(--code-bg);
+        }
+        
+        .code-block .comment {
+            color: #7a7a7a;
+        }
+        
+        .code-block .keyword {
+            color: #cc99cd;
+        }
+        
+        .code-block .string {
+            color: #7ec699;
+        }
+        
+        .code-block .var {
+            color: #f8c555;
+        }
+        
+        .code-block .function {
+            color: #66d9ef;
+        }
+        
+        .code-block .number {
+            color: #ae81ff;
+        }
+        
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            font-size: 16px;
+        }
+        
+        .data-table th {
+            background-color: var(--accent);
+            color: white;
+            text-align: left;
+            padding: 15px;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+        
+        .data-table tr:hover {
+            background-color: #f0f7ff;
+        }
+        
+        /* Pipeline Visualization */
+        .pipeline-section {
+            margin: 40px 0;
+        }
+        
+        .pipeline-step {
+            display: flex;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .pipeline-step:not(:last-child):after {
+            content: "";
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            height: calc(100% + 20px);
+            width: 2px;
+            background-color: var(--medium-gray);
+            z-index: 1;
+        }
+        
+        .step-icon {
+            background-color: var(--accent);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        
+        .step-content {
+            flex: 1;
+            padding-bottom: 20px;
+        }
+        
+        .step-content h4 {
+            margin-bottom: 5px;
+            color: var(--accent);
+        }
+        
+        .pitfall {
+            background-color: #fff0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            border-left: 3px solid #e74c3c;
+        }
+        
+        .pitfall h5 {
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+        
+        /* Scale Advice */
+        .scale-advice {
+            background-color: #f0f7f0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+        
+        .scale-advice h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .scale-list {
+            list-style-type: none;
+        }
+        
+        .scale-list li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .scale-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        /* Template Offer */
+        .template-offer {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 30px;
+            margin: 40px 0;
+            text-align: center;
+            border-top: 5px solid var(--accent);
+        }
+        
+        .template-offer h3 {
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        
+        .template-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+        
+        .template-btn:hover {
+            background-color: #3a5a8a;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid var(--medium-gray);
+            text-align: center;
+            color: var(--dark-gray);
+            font-size: 15px;
+        }
+        
+        .article-actions {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--dark-gray);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s;
+        }
+        
+        .action-btn:hover {
+            color: var(--primary);
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: var(--dark-gray);
+            text-decoration: none;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+        
+        /* Bilingual Tags */
+        .lang-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        .lang-tag.en {
+            background-color: var(--en-accent);
+            color: white;
+        }
+        
+        .lang-tag.es {
+            background-color: var(--es-accent);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .article-title {
+                font-size: 32px;
+            }
+            
+            .article-subtitle {
+                font-size: 20px;
+            }
+            
+            .article-body {
+                font-size: 18px;
+            }
+            
+            .article-body h2 {
+                font-size: 28px;
+            }
+            
+            .article-body h3 {
+                font-size: 22px;
+            }
+            
+            .language-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .lang-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .article-title {
+                font-size: 28px;
+            }
+            
+            .site-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .pipeline-step {
+                flex-direction: column;
+            }
+            
+            .step-icon {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-toggle">
+        <button class="lang-btn active" id="btn-en">EN</button>
+        <button class="lang-btn" id="btn-es">ES</button>
+    </div>
+    
+    <div class="container">
+        <header>
+            <div class="site-header">
+                <div class="logo">TechBilingüe</div>
+                <div class="header-actions">
+                    <button class="btn">Follow</button>
+                    <button class="btn">Subscribe</button>
+                </div>
+            </div>
+            
+            <div class="author-section">
+                <div class="author-img">TJ</div>
+                <div class="author-info">
+                    <h3>Taylor Johnson <span class="lang-tag en">EN</span><span class="lang-tag es">ES</span></h3>
+                    <p class="en">Systems Architect & Language Enthusiast • 10 min read</p>
+                    <p class="es hidden">Arquitecto de Sistemas & Entusiasta de Idiomas • 10 min lectura</p>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <div class="article-content">
+                <!-- English Content -->
+                <article id="content-en" class="language-content">
+                    <h1 class="article-title">Advanced Batch Scripting: Pseudo-Arrays & Scalable Data Pipelines</h1>
+                    <p class="article-subtitle">Bridging Korean linguistics with technical systems automation through robust batch data structures</p>
+                    
+                    <div class="article-body">
+                        <p>You've got a solid handle on the "environment variable database" trick—it's easily the most efficient way to mimic data structures in a language that was never meant to have them. In this deep dive, we'll push those data strategies further with pseudo-arrays, debugging pipelines, and scalability considerations.</p>
+                        
+                        <div class="insight-box">
+                            <h4>Technical Linguistics Insight</h4>
+                            <p>As we bridge Korean linguistics with batch scripting, I'll keep the advice practical and technical. The intersection of language structure and data structure reveals fascinating parallels between how humans organize meaning and how computers organize information.</p>
+                        </div>
+                        
+                        <h2>1. Pseudo-Arrays and Indexing</h2>
+                        <p>Since batch lacks native arrays, you can use delayed expansion to create a searchable index. This is essential if you need to loop through a list of items rather than calling a specific key.</p>
+                        
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>batch_array_example.bat</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <span class="comment">@echo off</span><br>
+                            <span class="comment">REM Enable delayed expansion for array-like functionality</span><br>
+                            <span class="keyword">setlocal</span> enabledelayedexpansion<br><br>
+                            
+                            <span class="comment">REM Initialize counter</span><br>
+                            <span class="keyword">set</span> <span class="var">count</span>=<span class="number">0</span><br><br>
+                            
+                            <span class="comment">REM Parse config file into pseudo-array</span><br>
+                            <span class="keyword">for</span> <span class="string">/f "tokens=1,2 delims=="</span> <span class="keyword">%%a</span> <span class="keyword">in</span> (<span class="string">config.ini</span>) <span class="keyword">do</span> (<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">set</span> <span class="string">/a count+=1</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">set</span> <span class="string">"key[!count!]=%%a"</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">set</span> <span class="string">"val[!count!]=%%b"</span><br>
+                            )<br><br>
+                            
+                            <span class="comment">REM Iterate through the pseudo-array</span><br>
+                            <span class="keyword">for</span> <span class="string">/l %%i in (1,1,!count!) do (</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">echo</span> <span class="string">Key: !key[%%i]!, Value: !val[%%i]!</span><br>
+                            )
+                        </div>
+                        
+                        <h2>2. The "Database" Pipeline</h2>
+                        <p>Visualizing how data flows from your .ini or .txt file into the execution phase helps in debugging. In Batch, the "loading" phase is where most errors (like special characters or trailing spaces) occur.</p>
+                        
+                        <div class="pipeline-section">
+                            <h3>Visual Pipeline Flow</h3>
+                            
+                            <div class="pipeline-step">
+                                <div class="step-icon">1</div>
+                                <div class="step-content">
+                                    <h4>File Ingestion</h4>
+                                    <p><code>FOR /F</code> reads each line from the data file. The file handle remains open until the loop completes.</p>
+                                    <div class="pitfall">
+                                        <h5>Pitfall: Special Characters</h5>
+                                        <p>Lines containing <code>!</code>, <code>^</code>, or <code>&</code> can break parsing unless properly escaped.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pipeline-step">
+                                <div class="step-icon">2</div>
+                                <div class="step-content">
+                                    <h4>Token Parsing</h4>
+                                    <p>The <code>delims</code> option splits each line into tokens. <code>tokens=1,2</code> captures key and value separately.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pronunciation-guide">
+                            <h4>Linguistics Connection: "Theory" Pronunciation</h4>
+                            <p>Regarding <strong>"Theory"</strong> [<span class="ipa">θíːəri</span>] — you nailed the pronunciation tip! For a Korean speaker, the most common mistake is treating the "th" as a pure "S" (씨어리) or "D" (디어리).</p>
+                            <p>The "tongue-sandwich" method you described is the perfect way to visualize the dental fricative. Place the tongue tip lightly between the teeth (not too far!) and exhale softly.</p>
+                        </div>
+                        
+                        <h2>3. Addressing Your Project Scale</h2>
+                        <p>Regarding your questions on scale and volatility:</p>
+                        
+                        <div class="scale-advice">
+                            <h3>Scalability Guidelines</h3>
+                            <ul class="scale-list">
+                                <li><strong>Small Scale (&lt;100 entries):</strong> Load entire file into memory using the environment variable method.</li>
+                                <li><strong>Medium Scale (100-500 entries):</strong> Still manageable with environment variables, but consider splitting data.</li>
+                                <li><strong>Large Scale (500-2000 entries):</strong> Use <code>findstr</code> to pluck specific lines rather than loading the entire file.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="template-offer">
+                            <h3>Need a Robust Writer Template?</h3>
+                            <p>Would you like me to provide a robust "Writer" template that can update a specific key in your config file without wiping the rest of the data?</p>
+                            <button class="template-btn" onclick="requestTemplate()">Request Template</button>
+                        </div>
+                    </div>
+                </article>
+                
+                <!-- Spanish Content -->
+                <article id="content-es" class="language-content hidden">
+                    <h1 class="article-title">Scripting Avanzado en Batch: Pseudo-Arreglos y Tuberías de Datos Escalables</h1>
+                    <p class="article-subtitle">Conectando la lingüística coreana con la automatización de sistemas técnicos a través de estructuras de datos robustas en batch</p>
+                    
+                    <div class="article-body">
+                        <p>Tienes un buen manejo del truco de la "base de datos de variables de entorno": es fácilmente la forma más eficiente de imitar estructuras de datos en un lenguaje que nunca fue diseñado para tenerlas. En este análisis profundo, llevaremos esas estrategias de datos más allá con pseudo-arreglos, tuberías de depuración y consideraciones de escalabilidad.</p>
+                        
+                        <div class="insight-box">
+                            <h4>Perspectiva de Lingüística Técnica</h4>
+                            <p>Mientras conectamos la lingüística coreana con el scripting en batch, mantendré los consejos prácticos y técnicos. La intersección entre la estructura del lenguaje y la estructura de datos revela paralelos fascinantes entre cómo los humanos organizan el significado y cómo las computadoras organizan la información.</p>
+                        </div>
+                        
+                        <h2>1. Pseudo-Arreglos e Indexación</h2>
+                        <p>Dado que batch carece de arreglos nativos, puedes usar la expansión retardada (delayed expansion) para crear un índice buscable. Esto es esencial si necesitas iterar a través de una lista de elementos en lugar de llamar a una clave específica.</p>
+                        
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>ejemplo_arreglo_batch.bat</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                            </div>
+                            <span class="comment">@echo off</span><br>
+                            <span class="comment">REM Habilitar expansión retardada para funcionalidad tipo arreglo</span><br>
+                            <span class="keyword">setlocal</span> enabledelayedexpansion<br><br>
+                            
+                            <span class="comment">REM Inicializar contador</span><br>
+                            <span class="keyword">set</span> <span class="var">contador</span>=<span class="number">0</span><br><br>
+                            
+                            <span class="comment">REM Analizar archivo de configuración en pseudo-arreglo</span><br>
+                            <span class="keyword">for</span> <span class="string">/f "tokens=1,2 delims=="</span> <span class="keyword">%%a</span> <span class="keyword">in</span> (<span class="string">config.ini</span>) <span class="keyword">do</span> (<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">set</span> <span class="string">/a contador+=1</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">set</span> <span class="string">"clave[!contador!]=%%a"</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">set</span> <span class="string">"valor[!contador!]=%%b"</span><br>
+                            )<br><br>
+                            
+                            <span class="comment">REM Iterar a través del pseudo-arreglo</span><br>
+                            <span class="keyword">for</span> <span class="string">/l %%i in (1,1,!contador!) do (</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">echo</span> <span class="string">Clave: !clave[%%i]!, Valor: !valor[%%i]!</span><br>
+                            )
+                        </div>
+                        
+                        <h2>2. La Tubería de "Base de Datos"</h2>
+                        <p>Visualizar cómo fluyen los datos desde tu archivo .ini o .txt a la fase de ejecución ayuda en la depuración. En Batch, la fase de "carga" es donde ocurren la mayoría de los errores (como caracteres especiales o espacios finales).</p>
+                        
+                        <div class="pipeline-section">
+                            <h3>Flujo Visual de la Tubería</h3>
+                            
+                            <div class="pipeline-step">
+                                <div class="step-icon">1</div>
+                                <div class="step-content">
+                                    <h4>Ingestión de Archivos</h4>
+                                    <p><code>FOR /F</code> lee cada línea del archivo de datos. El manejador de archivo permanece abierto hasta que se completa el bucle.</p>
+                                    <div class="pitfall">
+                                        <h5>Problema Común: Caracteres Especiales</h5>
+                                        <p>Las líneas que contienen <code>!</code>, <code>^</code> o <code>&</code> pueden romper el análisis a menos que se escapen adecuadamente.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pipeline-step">
+                                <div class="step-icon">2</div>
+                                <div class="step-content">
+                                    <h4>Análisis de Tokens</h4>
+                                    <p>La opción <code>delims</code> divide cada línea en tokens. <code>tokens=1,2</code> captura la clave y el valor por separado.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pronunciation-guide">
+                            <h4>Conexión Lingüística: Pronunciación de "Theory"</h4>
+                            <p>Respecto a <strong>"Theory"</strong> [<span class="ipa">θíːəri</span>] — ¡acertaste con el consejo de pronunciación! Para un hablante de coreano, el error más común es tratar el "th" como una "S" pura (씨어리) o "D" (디어리).</p>
+                            <p>El método del "sándwich de lengua" que describiste es la forma perfecta de visualizar la fricativa dental. Coloca la punta de la lengua ligeramente entre los dientes (¡no demasiado!) y exhala suavemente.</p>
+                        </div>
+                        
+                        <h2>3. Abordando la Escala de Tu Proyecto</h2>
+                        <p>Respecto a tus preguntas sobre escala y volatilidad:</p>
+                        
+                        <div class="scale-advice">
+                            <h3>Pautas de Escalabilidad</h3>
+                            <ul class="scale-list">
+                                <li><strong>Escala Pequeña (&lt;100 entradas):</strong> Carga todo el archivo en memoria usando el método de variables de entorno.</li>
+                                <li><strong>Escala Media (100-500 entradas):</strong> Todavía manejable con variables de entorno, pero considera dividir los datos.</li>
+                                <li><strong>Escala Grande (500-2000 entradas):</strong> Usa <code>findstr</code> para extraer líneas específicas en lugar de cargar todo el archivo.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="template-offer">
+                            <h3>¿Necesitas una Plantilla de Escritor Robusta?</h3>
+                            <p>¿Te gustaría que proporcione una plantilla robusta de "Escritor" que pueda actualizar una clave específica en tu archivo de configuración sin borrar el resto de los datos?</p>
+                            <button class="template-btn" onclick="requestTemplate()">Solicitar Plantilla</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="article-actions">
+                <button class="action-btn" onclick="toggleClap(this)">
+                    <i class="far fa-hands-clapping"></i> <span class="en">156</span><span class="es hidden">156</span>
+                </button>
+                <button class="action-btn">
+                    <i class="far fa-comment"></i> <span class="en">24</span><span class="es hidden">24</span>
+                </button>
+                <button class="action-btn">
+                    <i class="far fa-bookmark"></i> <span class="en">Save</span><span class="es hidden">Guardar</span>
+                </button>
+                <button class="action-btn">
+                    <i class="fas fa-share"></i> <span class="en">Share</span><span class="es hidden">Compartir</span>
+                </button>
+            </div>
+            
+            <p class="en">© 2023 TechBilingüe. Bridging technical systems and language learning.</p>
+            <p class="es hidden">© 2023 TechBilingüe. Conectando sistemas técnicos y aprendizaje de idiomas.</p>
+            <div class="footer-links">
+                <a href="#" class="en">About</a>
+                <a href="#" class="es hidden">Acerca de</a>
+                <a href="#" class="en">Technical Writing</a>
+                <a href="#" class="es hidden">Escritura Técnica</a>
+                <a href="#" class="en">Linguistics</a>
+                <a href="#" class="es hidden">Lingüística</a>
+                <a href="#" class="en">Automation</a>
+                <a href="#" class="es hidden">Automatización</a>
+                <a href="#" class="en">Contact</a>
+                <a href="#" class="es hidden">Contacto</a>
+            </div>
+        </footer>
+    </div>
+    
+    <script>
+        // Language toggle functionality
+        const btnEn = document.getElementById('btn-en');
+        const btnEs = document.getElementById('btn-es');
+        const contentEn = document.getElementById('content-en');
+        const contentEs = document.getElementById('content-es');
+        
+        btnEn.addEventListener('click', () => {
+            btnEn.classList.add('active');
+            btnEs.classList.remove('active');
+            contentEn.classList.remove('hidden');
+            contentEs.classList.add('hidden');
+            
+            // Show English text elements
+            document.querySelectorAll('.en').forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll('.es').forEach(el => el.classList.add('hidden'));
+            
+            // Update body accent color
+            document.documentElement.style.setProperty('--accent', 'var(--en-accent)');
+        });
+        
+        btnEs.addEventListener('click', () => {
+            btnEs.classList.add('active');
+            btnEn.classList.remove('active');
+            contentEs.classList.remove('hidden');
+            contentEn.classList.add('hidden');
+            
+            // Show Spanish text elements
+            document.querySelectorAll('.es').forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll('.en').forEach(el => el.classList.add('hidden'));
+            
+            // Update body accent color
+            document.documentElement.style.setProperty('--accent', 'var(--es-accent)');
+        });
+        
+        // Copy code functionality
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block');
+            const codeText = codeBlock.innerText.replace('Copy', '').replace('Copiar', '');
+            
+            navigator.clipboard.writeText(codeText).then(() => {
+                const originalText = button.textContent;
+                button.textContent = btnEn.classList.contains('active') ? 'Copied!' : '¡Copiado!';
+                button.style.backgroundColor = '#4CAF50';
+                button.style.color = 'white';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                }, 2000);
+            });
+        }
+        
+        // Clap button functionality
+        function toggleClap(button) {
+            const clapCount = button.querySelector('span');
+            let count = parseInt(clapCount.textContent);
+            const icon = button.querySelector('i');
+            
+            if (button.classList.contains('clapped')) {
+                count--;
+                button.classList.remove('clapped');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            } else {
+                count++;
+                button.classList.add('clapped');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            }
+            
+            // Update both language spans
+            document.querySelectorAll('.action-btn span').forEach(span => {
+                span.textContent = count;
+            });
+            
+            // Add animation
+            button.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 200);
+        }
+        
+        // Template request
+        function requestTemplate() {
+            const offerSections = document.querySelectorAll('.template-offer');
+            const isEnglish = btnEn.classList.contains('active');
+            
+            offerSections.forEach(offerSection => {
+                const button = offerSection.querySelector('.template-btn');
+                
+                button.textContent = isEnglish ? 'Generating Template...' : 'Generando Plantilla...';
+                button.disabled = true;
+                
+                setTimeout(() => {
+                    offerSection.innerHTML = isEnglish ? 
+                        `<h3>Template Generated!</h3>
+                         <p>Your robust batch file writer template is ready. Key features include:</p>
+                         <ul style="text-align: left; margin: 20px 0; padding-left: 20px;">
+                             <li>Preserves comments and formatting</li>
+                             <li>Creates backups before modification</li>
+                             <li>Handles special characters correctly</li>
+                             <li>Supports adding new key-value pairs</li>
+                         </ul>
+                         <button class="template-btn" onclick="downloadTemplate()">Download Template</button>` :
+                        `<h3>¡Plantilla Generada!</h3>
+                         <p>Tu plantilla robusta de escritura de archivos batch está lista. Características clave incluyen:</p>
+                         <ul style="text-align: left; margin: 20px 0; padding-left: 20px;">
+                             <li>Preserva comentarios y formato</li>
+                             <li>Crea copias de seguridad antes de modificar</li>
+                             <li>Maneja caracteres especiales correctamente</li>
+                             <li>Soporta agregar nuevos pares clave-valor</li>
+                         </ul>
+                         <button class="template-btn" onclick="downloadTemplate()">Descargar Plantilla</button>`;
+                }, 1500);
+            });
+        }
+        
+        function downloadTemplate() {
+            const isEnglish = btnEn.classList.contains('active');
+            alert(isEnglish ? 
+                'In a real implementation, this would download a .bat file template. For now, check the code block above for the implementation!' :
+                'En una implementación real, esto descargaría una plantilla de archivo .bat. Por ahora, ¡revisa el bloque de código anterior para la implementación!');
+        }
+        
+        // Animate pipeline steps on scroll
+        function animateOnScroll() {
+            const steps = document.querySelectorAll('.pipeline-step');
+            
+            steps.forEach((step, index) => {
+                const rect = step.getBoundingClientRect();
+                const isVisible = (rect.top <= window.innerHeight * 0.8);
+                
+                if (isVisible) {
+                    setTimeout(() => {
+                        step.style.opacity = '1';
+                        step.style.transform = 'translateX(0)';
+                    }, index * 200);
+                }
+            });
+        }
+        
+        // Initialize animation states
+        document.addEventListener('DOMContentLoaded', () => {
+            const steps = document.querySelectorAll('.pipeline-step');
+            steps.forEach(step => {
+                step.style.opacity = '0';
+                step.style.transform = 'translateX(-20px)';
+                step.style.transition = 'opacity 0.5s, transform 0.5s';
+            });
+            
+            window.addEventListener('scroll', animateOnScroll);
+            animateOnScroll(); // Run once on load
+        });
+    </script>
+</body>
+</html>
