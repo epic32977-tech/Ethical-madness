@@ -1,0 +1,14 @@
+def urgency_blog_post(product_name, affiliate_link):
+    return f"""
+Why This One Weird {product_name} Changed My Life After 40
+
+I was done. Work, stress, zero energy. Then I found {product_name}. 
+No BS – within days I felt sharper, lighter, actually excited to wake up.
+
+Stock is disappearing fast (they're always "limited" with these). 
+This is the exact one I use every morning: {affiliate_link}
+
+Don't wait until you're me six months ago. Grab it while it's still around.
+"""
+
+print(urgency_blog_post("Morning Fat Burner", "https://yourlink.com/ref=epic"))
