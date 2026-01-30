@@ -1,0 +1,20 @@
+# ... (inside your script) ...
+
+# 5. Securing & Validating (Frank's Way)
+echo "🛡️ Securing backup..."
+# If you run this in Cron, you MUST provide the passphrase via env or file
+if [[ -z "$BACKUP_PASS" ]]; then
+    echo "⚠️ WARNING: No BACKUP_PASS env var. Manual password entry required."
+fi
+
+gpg --batch --yes --pinentry-mode loopback \
+    --passphrase "$BACKUP_PASS" -c --cipher-algo AES256 "$TAR_FILE"
+
+# 6. The "Trust but Verify" Step
+echo "🔍 Testing archive integrity..."
+if gpg --batch --yes --passphrase "$BACKUP_PASS" -d "$TAR_FILE.gpg" | tar -tzf - > /dev/null; then
+    echo "💎 Data integrity verified. You can sleep now."
+else
+    echo "❌ ERROR: Backup is corrupted! Check your SD card health."
+    exit 1
+fi

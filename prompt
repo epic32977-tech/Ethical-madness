@@ -1,0 +1,16 @@
+Role: Senior Systems Architect & Linux Kernel Specialist.
+Task: Hard-target technical audit of a "Migration-Grade" backup/restore system.
+​Environment Context: * Platform: Android (Termux)
+​Storage: Destination is an external SD card (FAT32/exFAT).
+​Workload: Critical SQLite databases for "Prompt Genie" and nested Git repositories.
+​The Strategy:
+​The Backup: Uses find with -print0 for safety, performs sqlite3 .dump and PRAGMA integrity_check, creates git bundle files for all repos, and wraps everything in a GPG-encrypted tarball.
+​The Restore: Reconstitutes Git repos via git clone <bundle> and extracts the tarball to a staging directory.
+​The Audit Requirements:
+Please analyze the following scripts for "Silent Killers." Specifically:
+​The Pipefail Vulnerability: How do we handle cases where sqlite3 .dump fails but the redirection to .sql returns a successful exit code 0?
+​Filesystem Impedance: Since /sdcard/ (FAT32/exFAT) does not support Unix permissions, will the tar -p flag actually survive a migration round-trip, or do we need a sidecar metadata file for chmod restoration?
+​Atomic Integrity: How can we implement a "Verify-Before-Wipe" check that ensures the GPG archive is not just present, but internally consistent and decryptable?
+​Git Bundle Edge Cases: Does git bundle --all capture uncommitted changes in the index, or are we risking "staged-but-lost" data?
+​Frank's Rigor: Suggest 3 "Pro-Grade" improvements (e.g., set -o pipefail, rsync logic, or trap handlers for cleanup) that would make this script survive a professional peer review.
+​The Scripts to Audit:

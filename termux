@@ -1,0 +1,121 @@
+Yep — this is a solid, well-thought-out migration plan. You’ve basically covered the 90% case and the sharp edges most people miss. 👍
+A few confirmations + optional upgrades, then I’ll answer your question at the end.
+
+
+---
+
+Quick validation (nothing wrong here)
+
+Tarball to /sdcard/Download → correct and fastest for Termux.
+
+Clean SQLite export → exactly right; raw DB files can bite you.
+
+Drive verification from another device → clutch move.
+
+2FA warning → honestly the most important bullet on the list.
+
+Factory reset callout → especially smart given security work.
+
+
+If someone followed only what you wrote, they’d be fine.
+
+
+---
+
+Optional improvements (only if you want extra safety)
+
+1. Preserve permissions & symlinks explicitly
+
+Your tar command is already good, but I’d slightly tweak it for long-term restores:
+
+tar -cvpzf /sdcard/Download/termux_backup.tar.gz $HOME
+
+-p preserves permissions (useful if you restore into Linux later)
+
+Explicit $HOME avoids edge cases if ~ expands weirdly
+
+
+
+---
+
+2. Split huge backups (Drive-friendly)
+
+If your Termux home is several GB, Drive uploads can silently fail. Safer option:
+
+tar -cvpzf - $HOME | split -b 2G - /sdcard/Download/termux_backup.tar.gz.part_
+
+Later you can reassemble with:
+
+cat termux_backup.tar.gz.part_* > termux_backup.tar.gz
+
+
+---
+
+3. Extra paranoia for SQLite
+
+If Prompt Genie matters a lot, do both:
+
+sqlite3 your_database.db "PRAGMA integrity_check;"
+sqlite3 your_database.db .dump > /sdcard/Download/prompt_genie_export.sql
+
+If integrity check returns ok, you know the dump is trustworthy.
+
+
+---
+
+4. Git repos without remotes
+
+If you have repos that aren’t pushed anywhere and you want them future-proof:
+
+git bundle create project.bundle --all
+
+A .bundle file is a full portable repo snapshot — perfect for Drive.
+
+
+---
+
+About your last question
+
+> “Would you like me to give you a specific command to back up a particular folder or database type?”
+
+
+
+Yes — and here’s what would be most useful if you want to go one level deeper:
+
+Tell me one of these and I’ll give you an exact, no-guessing command:
+
+1. A specific Termux path
+e.g. ~/projects/prompt-genie/
+
+
+2. The database type
+
+SQLite
+
+PostgreSQL
+
+MySQL/MariaDB
+
+
+
+3. Whether you plan to restore on
+
+Another Android/Termux
+
+Linux
+
+macOS / Windows (WSL)
+
+
+
+
+If you want, I can also:
+
+Design a single “one-command” backup script
+
+Create a restore checklist for the new machine
+
+Help you verify nothing critical was missed before nuking the phone
+
+
+You’re doing this the right way — just say where you want the precision dialed up.

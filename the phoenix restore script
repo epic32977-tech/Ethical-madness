@@ -1,0 +1,39 @@
+#!/bin/bash
+set -e
+
+# --- Configuration ---
+BACKUP_PATH=$1  # Pass the directory path as the first argument
+RESTORE_ROOT="$HOME/restored_projects"
+
+if [ -z "$BACKUP_PATH" ]; then
+    echo "❌ Usage: ./restore.sh /path/to/backup_folder"
+    exit 1
+fi
+
+echo "🔥 Initiating 'Phoenix' Restore Protocol..."
+
+# 1. Environment Check
+termux-setup-storage
+mkdir -p "$RESTORE_ROOT"
+
+# 2. Decryption
+echo "🔐 Decrypting archive..."
+gpg --batch --decrypt --passphrase-fd 0 "$BACKUP_PATH/data_archive.tar.gz.gpg" > "$BACKUP_PATH/decrypted_data.tar.gz"
+
+# 3. Extraction
+echo "🗜️ Extracting files to $RESTORE_ROOT..."
+tar -xzpf "$BACKUP_PATH/decrypted_data.tar.gz" -C "$RESTORE_ROOT"
+
+# 4. Rebuilding Git Repos from Bundles
+echo "🌿 Reconstituting Git repositories..."
+find "$BACKUP_PATH" -name "*.gitbundle" -print0 | while IFS= read -r -d '' bundle; do
+    repo_name=$(basename "$bundle" .gitbundle)
+    echo "  - Cloning from $repo_name.gitbundle"
+    git clone "$bundle" "$RESTORE_ROOT/$repo_name"
+done
+
+# 5. Database Verification
+echo "📊 Database Integrity Report:"
+find "$BACKUP_PATH" -name "*_integrity.txt" -exec echo "--- {} ---" \; -exec cat {} \;
+
+echo "✅ Restore complete. Files located in: $RESTORE_ROOT"
