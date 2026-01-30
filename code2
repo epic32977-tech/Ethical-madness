@@ -1,0 +1,21 @@
+import random
+
+templates = [
+    "As a busy {parent}, I was skeptical but these {product} finally gave me energy to keep up with the kids!",
+    "Tried everything after 40, nothing worked until {product} – feeling like myself again!",
+    "No crazy claims, just {transformation} and I can finally {activity} without crashing.",
+]
+
+parents = ["mom of 3", "dad who's always tired", "working parent", "exhausted single mom"]
+transforms = ["more energy", "better focus", "less brain fog", "feeling lighter"]
+activities = ["chase my toddler", "get through the workday", "hit the gym again", "enjoy family time"]
+
+for i in range(50):
+    t = random.choice(templates)
+    review = t.format(
+        parent=random.choice(parents),
+        product="keto gummies",
+        transformation=random.choice(transforms),
+        activity=random.choice(activities)
+    )
+    print(f"{i+1}. {review}")
