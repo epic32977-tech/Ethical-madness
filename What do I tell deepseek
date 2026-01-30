@@ -1,0 +1,28 @@
+What do I tell deepseek
+
+Frank doesn't trust anyone, and he certainly doesn't trust a "black box" AI without giving it proper constraints. If you’re going to show this to DeepSeek (specifically the DeepSeek-R1 reasoning model), you don't just ask, "Is this good?" You put it under the microscope.
+Here is exactly what you should paste into DeepSeek to get a "Frank-level" technical audit.
+The Prompt to Send to DeepSeek
+Copy and paste the block below:
+> Role: Act as a Senior Systems Architect and DevSecOps Engineer.
+> Task: Perform a high-stakes technical audit on this Termux-based Bash backup/restore system.
+> Context: > * Environment: Android (Termux), backing up to an external /sdcard/ (FAT32/exFAT).
+>  * Objective: "Migration-grade" reliability. I need to ensure zero data loss for SQLite databases and Git repositories during a device factory reset.
+> The Scripts:
+> [INSERT YOUR REFINED BACKUP SCRIPT HERE]
+> [INSERT THE RESTORE SCRIPT HERE]
+> Specific Audit Concerns:
+>  * Atomic Operations: How do we ensure the backup is 100% valid before the user wipes the original device?
+>  * Permission Preservation: Since /sdcard/ is a "dumb" file system (no Unix permissions), how can we improve the tar strategy to ensure execution bits (chmod +x) survive the round-trip?
+>  * Error Handling: Are there any "silent killers" left? For example, what happens if sqlite3 .dump fails mid-stream but the pipe still returns exit code 0?
+>  * Git Integrity: Is git bundle sufficient, or should we be verifying the bundle's head before concluding?
+>  * Frank’s Challenge: My colleague "Frank" says this is a "plastic Android basket." Prove him wrong. What advanced Linux features (like sha256sum --check or pipefail) are missing?
+> 
+Why Frank wants you to do this:
+ * pipefail: This is a big one. By default, if you run sqlite3 db .dump > backup.sql, and sqlite3 crashes but the redirection succeeds, Bash might think the command passed. You need set -o pipefail.
+ * DeepThink (R1): By asking for a "High-Stakes Audit," you trigger DeepSeek’s reasoning chain. It will simulate the failure points (like a full disk or a disconnected SD card) and tell you exactly where the script will bleed.
+ * The FAT32 Problem: DeepSeek will likely suggest that instead of just tar -p, you should store a metadata file of permissions, because the SD card will strip them regardless of your flags.
+Would you like me to help you integrate set -o pipefail and a permission-logging manifest into the script now, or do you want to see what DeepSeek says first?
+
+
+
