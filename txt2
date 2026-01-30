@@ -1,0 +1,12 @@
+def tiktok_unbox_script(product, before="zombie mode", after="superhuman"):
+    script = f"""
+[0-5s] (yawn, tired face) Man… another day feeling like a zombie.
+[5-20s] (unbox product excitedly) Wait—what is THIS? {product}?
+[20-45s] (fake sip/pop, big eyes) Whoa. Energy just HIT different. 
+Before: {before}. After: straight {after}. No cap.
+[45-60s] Link in bio if you want this cheat code too. Limited drop apparently.
+"""
+    hashtags = "#MorningRoutine #Biohacking #Over40 #EnergyHack #NotSponsoredButShouldBe"
+    return script, hashtags
+
+print(*tiktok_unbox_script("Alpha Brain", "couch potato", "productivity god"))
