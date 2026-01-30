@@ -1,0 +1,45 @@
+import os
+import csv
+
+# Documentation: 
+# This script reads prompts from a file and prepares them for testing.
+# Ensure you have your API keys set in your environment variables.
+
+def load_prompts(file_path):
+    """Reads a text file and splits it into individual prompts."""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        # Assuming one prompt per line or separated by a specific delimiter
+        content = f.read()
+        return content.split('---') # Using '---' as a separator for long prompts
+
+def log_results(prompt_name, status, response):
+    """Logs the output of the test to a CSV file."""
+    file_exists = os.path.isfile('test_results.csv')
+    with open('test_results.csv', 'a', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['prompt_name', 'status', 'response']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        if not file_exists:
+            writer.writeheader()
+        
+        writer.writerow({
+            'prompt_name': prompt_name,
+            'status': status,
+            'response': response[:100] + "..." # Log the start of the response
+        })
+
+def main():
+    # Example usage:
+    # Replace 'my_prompts.md' with your actual file in the repo
+    prompts = load_prompts('prompts.md')
+    
+    for i, p in enumerate(prompts):
+        print(f"Testing Prompt {i}...")
+        # Here you would call your API. 
+        # Example: response = client.chat.completions.create(...)
+        
+        # For now, we simulate a log entry:
+        log_results(f"Prompt_{i}", "Checked", "Sample response data")
+
+if __name__ == "__main__":
+    main()
