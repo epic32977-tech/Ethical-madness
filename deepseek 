@@ -1,0 +1,37 @@
+#!/bin/bash
+# --- BACKUP_PROMPT_GENIE.SH ---
+set -e
+set -o pipefail # Added based on preliminary audit
+
+BACKUP_ROOT="/sdcard/Download/termux_backups"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="$BACKUP_ROOT/prompt_genie_$TIMESTAMP"
+TAR_FILE="$BACKUP_DIR/data_archive.tar.gz"
+
+SOURCE_DIRS=( "$HOME/projects/prompt-genie" )
+EXTRA_FILES=( "$HOME"/*.json "$HOME"/*.jsonl )
+
+mkdir -p "$BACKUP_DIR"
+
+# SQLite Dumps with Integrity Checks
+for src in "${SOURCE_DIRS[@]}"; do
+    [ -d "$src" ] || continue
+    find "$src" -type f \( -iname "*.sqlite*" -o -iname "*.db" \) -print0 | while IFS= read -r -d '' db; do
+        db_name=$(basename "$db")
+        sqlite3 "$db" ".dump" > "$BACKUP_DIR/${db_name%.*}.sql"
+        sqlite3 "$db" "PRAGMA integrity_check;" > "$BACKUP_DIR/${db_name%.*}_integrity.txt"
+    done
+done
+
+# Git Bundling
+find "$HOME" -type d -name ".git" -prune -print0 | while IFS= read -r -d '' gitdir; do
+    repo_dir=$(dirname "$gitdir")
+    repo_name=$(basename "$repo_dir")
+    (cd "$repo_dir" && git bundle create "$BACKUP_DIR/$repo_name.gitbundle" --all)
+done
+
+# Compression & Encryption
+EXISTING_EXTRAS=()
+for f in "${EXTRA_FILES[@]}"; do [[ -e "$f" ]] && EXISTING_EXTRAS+=("$f"); done
+tar -czpf "$TAR_FILE" "${SOURCE_DIRS[@]}" "${EXISTING_EXTRAS[@]}"
+gpg --batch --yes -c --cipher-algo AES256 "$TAR_FILE"
