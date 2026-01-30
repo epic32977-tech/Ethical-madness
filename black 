@@ -1,0 +1,17 @@
+import random
+import datetime
+
+def random_delay_posts(count=20, start_hour=8, end_hour=22):
+    delays = []
+    current = datetime.datetime.now().replace(hour=start_hour, minute=0, second=0)
+    for _ in range(count):
+        delay_min = random.randint(20, 90)  # 20–90 min apart
+        current += datetime.timedelta(minutes=delay_min)
+        if current.hour > end_hour:
+            current += datetime.timedelta(days=1)
+            current = current.replace(hour=start_hour, minute=0)
+        delays.append(current.strftime("%Y-%m-%d %H:%M"))
+    return delays
+
+print("Suggested post times:")
+print("\n".join(random_delay_posts()))
